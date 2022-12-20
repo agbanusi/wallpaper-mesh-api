@@ -17,7 +17,7 @@ import replicate
 def generate_image_text_first_source(prompt, height, width, image=None):
   model = replicate.models.get("cjwbw/stable-diffusion-v2")
   version = model.versions.get("e5e1fd333a08c8035974a01dd42f799f1cca4625aec374643d716d9ae40cf2e4")
-  prompt = prompt+", highly detailed, 4k, 8k, uhd, unreal engine, ultra realistic, digital art, photo, octane render, smooth, sharp focus, illustration, elegant, hyperrealistic, cinematic, concept art, illustration"
+  prompt = prompt+", highly detailed, 4k, 8k, uhd, ultra realistic, digital art, photo, illustration, elegant, hyperrealistic, concept art"
   if image:
     output = version.predict(prompt="", num_outputs=3, num_inference_steps=50, height=height, width=width, init_image=image, scheduler="K_EULER")
   else:

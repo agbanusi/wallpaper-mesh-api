@@ -25,16 +25,16 @@ load_dotenv()
 prompts = {}
 openai.api_key = os.environ["OPENAI"]
 # Connect to the MongoDB database
-client = MongoClient("mongodb://localhost:27017")
-db = client["dev"]
+client = MongoClient(os.environ["USERDB"])
+db = client["Cluster0"]
 # Get the salt value from the environment variable
 salt = os.environ["PASSWORD_SALT"]
 APP = flask.Flask(__name__)
 CORS(APP)
 cloudinary.config( 
-  cloud_name = "johnny11", 
-  api_key = "276948169559494", 
-  api_secret = "uoFEfon8NgujDHmyJ91zmRQ4PP4",
+  cloud_name = os.environ["CLD_NAME"], 
+  api_key = os.environ["CLD_KEY"], 
+  api_secret = os.environ["CLD_SECRET"],
   secure = True)
 
 def get_response(message, messages, funcs):
