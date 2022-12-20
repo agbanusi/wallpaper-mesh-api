@@ -3,20 +3,16 @@ import hashlib
 from PIL import Image
 import io
 import flask
-import base64
 from pymongo import MongoClient
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
-from bson import ObjectId
-import jwt
 from flask import g,  request, jsonify
 import os
 import openai
 from flask_cors import CORS, cross_origin
 from sdiff import *
 from dalle import *
-import json
 from dotenv import load_dotenv
 
 # Load the environment variables from the .env file
@@ -85,25 +81,25 @@ def get_response(message, messages, funcs):
 #   else:
 #     return jsonify({"status": "error", "message": "Invalid username or password"})
 
-@APP.route("/register", methods=["POST"])
-def register():
-  # Get the username and password from the request body
-  data = request.json
-  username = data["username"]
-  password = data["password"]
+# @APP.route("/register", methods=["POST"])
+# def register():
+#   # Get the username and password from the request body
+#   data = request.json
+#   username = data["username"]
+#   password = data["password"]
 
-  # Check if the username is already taken
-  user = db.chatUsers.find_one({"username": username})
-  if user:
-    return jsonify({"status": "error", "message": "Username is already taken"})
-  else:
-      # Hash the password using SHA-256 and the salt value
-    password_hash = hashlib.sha256((password + salt).encode("utf-8")).hexdigest()
-    # Insert the new user into the database
-    result = db.chatUsers.insert_one({"username": username, "password": password_hash, "messages":[]})
-    # Create a JWT token for the user
-    token = jwt.encode({"user_id": str(result.inserted_id)}, APP.config["SECRET_KEY"], algorithm="HS256")
-    return jsonify({"status": "success", "message": "Registration successful", "user_id": str(result.inserted_id), "token":token})
+#   # Check if the username is already taken
+#   user = db.chatUsers.find_one({"username": username})
+#   if user:
+#     return jsonify({"status": "error", "message": "Username is already taken"})
+#   else:
+#       # Hash the password using SHA-256 and the salt value
+#     password_hash = hashlib.sha256((password + salt).encode("utf-8")).hexdigest()
+#     # Insert the new user into the database
+#     result = db.chatUsers.insert_one({"username": username, "password": password_hash, "messages":[]})
+#     # Create a JWT token for the user
+#     token = jwt.encode({"user_id": str(result.inserted_id)}, APP.config["SECRET_KEY"], algorithm="HS256")
+#     return jsonify({"status": "success", "message": "Registration successful", "user_id": str(result.inserted_id), "token":token})
 
 @APP.route('/generate_image', methods=['POST','OPTIONS'])
 @cross_origin()
