@@ -1,17 +1,17 @@
-from diffusers import StableDiffusionPipeline, EulerDiscreteScheduler
+# from diffusers import StableDiffusionPipeline, EulerDiscreteScheduler
 import replicate
-import torch
-model_id = "stabilityai/stable-diffusion-2"
+# import torch
+# model_id = "stabilityai/stable-diffusion-2"
 
-def generate_image_text_first_source_main(prompt, height, width):
-  # Use the Euler scheduler here instead
-  scheduler = EulerDiscreteScheduler.from_pretrained(model_id, subfolder="scheduler")
-  pipe = StableDiffusionPipeline.from_pretrained(model_id, scheduler=scheduler, revision="fp16", torch_dtype=torch.float16)
-  pipe = pipe.to("cuda")
-  prompt = prompt+", highly detailed, 8k uhd, ultra realistic, Digital art,"
-  images = pipe(prompt, height=height, width=width, num_outputs=5).images[0:5]
-  print(images)
-  return images
+# def generate_image_text_first_source_main(prompt, height, width):
+#   # Use the Euler scheduler here instead
+#   scheduler = EulerDiscreteScheduler.from_pretrained(model_id, subfolder="scheduler")
+#   pipe = StableDiffusionPipeline.from_pretrained(model_id, scheduler=scheduler, revision="fp16", torch_dtype=torch.float16)
+#   pipe = pipe.to("cuda")
+#   prompt = prompt+", highly detailed, 8k uhd, ultra realistic, Digital art,"
+#   images = pipe(prompt, height=height, width=width, num_outputs=5).images[0:5]
+#   print(images)
+#   return images
 
 
 def generate_image_text_first_source(prompt, height, width, image=None):
