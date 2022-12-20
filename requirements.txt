@@ -233,7 +233,6 @@ ssort==0.11.6
 stdlib-list==0.8.0
 stevedore==4.1.1
 sympy==1.11.1
-TA-Lib==0.4.25
 termcolor==2.1.0
 tls-client==0.1.5
 tokenize-rt==4.2.1
