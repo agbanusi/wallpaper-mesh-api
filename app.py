@@ -25,8 +25,8 @@ client = MongoClient(os.environ["USERDB"])
 db = client["Cluster0"]
 # Get the salt value from the environment variable
 salt = os.environ["PASSWORD_SALT"]
-APP = flask.Flask(__name__)
-CORS(APP)
+app = flask.Flask(__name__)
+CORS(app)
 cloudinary.config( 
   cloud_name = os.environ["CLD_NAME"], 
   api_key = os.environ["CLD_KEY"], 
@@ -42,7 +42,7 @@ def get_response(message, messages, funcs):
         # Catch any exceptions and continue trying the next function
         continue
 
-# @APP.route("/chat", methods=["POST"])
+# @app.route("/chat", methods=["POST"])
 # def chat():
 #     # Get the user ID and message from the request body
 #     data = request.json
@@ -50,7 +50,7 @@ def get_response(message, messages, funcs):
 #     message = data["message"]
 
 #     # Decode the JWT token
-#     claims = jwt.decode(token, APP.config["SECRET_KEY"], algorithms=["HS256"])
+#     claims = jwt.decode(token, app.config["SECRET_KEY"], algorithms=["HS256"])
 
 #     # Retrieve the user's details from the database
 #     user = db.chatUsers.find_one({"_id": ObjectId(claims["user_id"])})
@@ -64,7 +64,7 @@ def get_response(message, messages, funcs):
 #          return jsonify({"status": "error", "message": "Invalid username or password"})
     
 # # Define the routes for the login, register, and user storage functionality
-# @APP.route("/login", methods=["POST"])
+# @app.route("/login", methods=["POST"])
 # def login():
 #   # Get the username and password from the request body
 #   data = request.json
@@ -81,7 +81,7 @@ def get_response(message, messages, funcs):
 #   else:
 #     return jsonify({"status": "error", "message": "Invalid username or password"})
 
-# @APP.route("/register", methods=["POST"])
+# @app.route("/register", methods=["POST"])
 # def register():
 #   # Get the username and password from the request body
 #   data = request.json
@@ -98,10 +98,10 @@ def get_response(message, messages, funcs):
 #     # Insert the new user into the database
 #     result = db.chatUsers.insert_one({"username": username, "password": password_hash, "messages":[]})
 #     # Create a JWT token for the user
-#     token = jwt.encode({"user_id": str(result.inserted_id)}, APP.config["SECRET_KEY"], algorithm="HS256")
+#     token = jwt.encode({"user_id": str(result.inserted_id)}, app.config["SECRET_KEY"], algorithm="HS256")
 #     return jsonify({"status": "success", "message": "Registration successful", "user_id": str(result.inserted_id), "token":token})
 
-@APP.route('/generate_image', methods=['POST','OPTIONS'])
+@app.route('/generate_image', methods=['POST','OPTIONS'])
 @cross_origin()
 def generate_image():
     data = request.json
@@ -173,7 +173,7 @@ def get_image_dalle(image):
     image_data = image_to_byte_array(image)
     return image_data
 
-@APP.route('/modify_image', methods=['POST'])
+@app.route('/modify_image', methods=['POST'])
 def modify_image():
     data = request.form
     # if not data:
@@ -208,7 +208,7 @@ def modify_image():
     return jsonify({"status": "success", "images": ress})
 
 
-@APP.route("/favourites", methods=["GET"])
+@app.route("/favourites", methods=["GET"])
 def favourites():
   # Get the username and password from the request body
   ip = request.args.get('ip')
@@ -221,7 +221,7 @@ def favourites():
     return jsonify({"status": "success", "images": resp['images']})
 
 
-@APP.route("/latest", methods=["GET"])
+@app.route("/latest", methods=["GET"])
 def latest():
   resp = db.chatUsers.aggregate([
       {
@@ -240,7 +240,7 @@ def latest():
   resp = [item['images'] for item in resp]
   return jsonify({"status": "success", "images": resp})
 
-# @APP.route('/variance_image', methods=['POST'])
+# @app.route('/variance_image', methods=['POST'])
 # def variance_image():
 #     data = request.json
 #     # Get the image file from the request
@@ -264,4 +264,4 @@ def latest():
 
 if __name__ == "__main__":
     #start_browser()
-    APP.run(port=5001, threaded=False)
+    app.run(port=5001, threaded=False)
