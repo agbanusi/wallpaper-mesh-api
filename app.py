@@ -2,6 +2,7 @@
 import hashlib
 from PIL import Image
 import io
+import time
 import flask
 from pymongo import MongoClient
 import cloudinary
@@ -42,86 +43,23 @@ def get_response(message, messages, funcs):
         # Catch any exceptions and continue trying the next function
         continue
 
-# @app.route("/chat", methods=["POST"])
-# def chat():
-#     # Get the user ID and message from the request body
-#     data = request.json
-#     token = data["token"]
-#     message = data["message"]
-
-#     # Decode the JWT token
-#     claims = jwt.decode(token, app.config["SECRET_KEY"], algorithms=["HS256"])
-
-#     # Retrieve the user's details from the database
-#     user = db.chatUsers.find_one({"_id": ObjectId(claims["user_id"])})
-#     if user:
-#         # Update the user's message in the database
-#         response = get_response(message, user["messages"], [best, next_best, lower_last])
-#         print("Response: ", response)
-#         db.chatUsers.update_one({"_id": ObjectId(claims["user_id"])}, {"$push": {"messages": {"input":message, "response":response}}})
-#         return jsonify({"status": "success", "response":response})
-#     else:
-#          return jsonify({"status": "error", "message": "Invalid username or password"})
-    
-# # Define the routes for the login, register, and user storage functionality
-# @app.route("/login", methods=["POST"])
-# def login():
-#   # Get the username and password from the request body
-#   data = request.json
-#   username = data["username"]
-#   password = data["password"]
-
-#   # Hash the password using SHA-256 and the salt value
-#   password_hash = hashlib.sha256((password + salt).encode("utf-8")).hexdigest()
-
-#   # Check if the username and password are valid
-#   user = db.chatUsers.find_one({"username": username, "password": password_hash})
-#   if user:
-#     return jsonify({"status": "success", "message": "Login successful", "user_id": str(user["_id"])})
-#   else:
-#     return jsonify({"status": "error", "message": "Invalid username or password"})
-
-# @app.route("/register", methods=["POST"])
-# def register():
-#   # Get the username and password from the request body
-#   data = request.json
-#   username = data["username"]
-#   password = data["password"]
-
-#   # Check if the username is already taken
-#   user = db.chatUsers.find_one({"username": username})
-#   if user:
-#     return jsonify({"status": "error", "message": "Username is already taken"})
-#   else:
-#       # Hash the password using SHA-256 and the salt value
-#     password_hash = hashlib.sha256((password + salt).encode("utf-8")).hexdigest()
-#     # Insert the new user into the database
-#     result = db.chatUsers.insert_one({"username": username, "password": password_hash, "messages":[]})
-#     # Create a JWT token for the user
-#     token = jwt.encode({"user_id": str(result.inserted_id)}, app.config["SECRET_KEY"], algorithm="HS256")
-#     return jsonify({"status": "success", "message": "Registration successful", "user_id": str(result.inserted_id), "token":token})
-
 @app.route('/generate_image', methods=['POST','OPTIONS'])
 @cross_origin()
 def generate_image():
+  try:
+    first = time.time()
     data = request.json
     if not data:
-        return jsonify({"status": "failed"}), 400
+      return jsonify({"status": "failed"}), 400
     text = data['text']
     ip = data['ip']
     if 'size' in data:
       size = data['size']
     else:
-      size='1024x1024'
+      size='512x512'
     
     user = db.chatUsers.find_one({"user": ip})
-    resp1 = generate_image_text_first_source_dalle(text.lower(), size)
-    resp2 = []
-    try:
-      resp2 = generate_image_text_first_source(text.lower(), 832, 448) + generate_image_text_first_source(text.lower(), 832, 448)
-    except:
-      print('error')
-    resp = resp1 +resp2
+    resp = generate_image_text_first_source_dalle(text.lower(), size)
     ress = []
 
     for i in resp:
@@ -133,18 +71,50 @@ def generate_image():
     else:
       db.chatUsers.insert_one({"user": ip, "images": ress})
     
+    second = time.time()
+    print(second-first)
     return jsonify({"status": "success", "images": ress})
+  except:
+    return jsonify({"status": "failed"}), 500
+
+
+@app.route('/generate_image_2', methods=['POST','OPTIONS'])
+@cross_origin()
+def generate_image_2():
+  try:
+    first = time.time()
+    data = request.json
+    if not data:
+        return jsonify({"status": "failed"}), 400
+    text = data['text']
+    ip = data['ip']
+    
+    user = db.chatUsers.find_one({"user": ip})
+    resp = []
+    try:
+      resp = generate_image_text_first_source(text.lower(), 896, 512) 
+    except Exception as e:
+      print('error',e)
+    print(resp)
+      
+    ress = []
+
+    for i in resp:
+      res = cloudinary.uploader.upload(i, upload_preset="wallpaper")
+      ress.append(res['secure_url'])
+
+    if user:
+      db.chatUsers.update_one({"user":ip}, {"$push": {"images": {"$each":ress}}})
+    else:
+      db.chatUsers.insert_one({"user": ip, "images": ress})
+    
+    second = time.time()
+    print(second-first)
+    return jsonify({"status": "success", "images": ress})
+  except:
+    return jsonify({"status": "failed"}), 500
 
 def convertImageFormat(imgObj, outputFormat="PNG"):
-    """Convert image format
-    Args:
-        imgObj (Image): the Pillow Image instance
-        outputFormat (str): Image format, eg: "JPEG"/"PNG"/"BMP"/"TIFF"/...
-            more refer: https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html
-    Returns:
-        bytes, binary data of Image
-    Raises:
-    """
     newImgObj = imgObj
     if outputFormat and (imgObj.format != outputFormat):
         imageBytesIO = io.BytesIO()
