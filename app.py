@@ -92,6 +92,40 @@ def generate_image_2():
       resp = generate_image_text_first_source(text.lower(), 896, 512) 
     except Exception as e:
       print('error',e)
+
+    ress = []
+    for i in resp:
+      res = cloudinary.uploader.upload(i, upload_preset="wallpaper")
+      ress.append(res['secure_url'])
+
+    if user:
+      db.chatUsers.update_one({"user":ip}, {"$push": {"images": {"$each":ress}}})
+    else:
+      db.chatUsers.insert_one({"user": ip, "images": ress})
+    
+    second = time.time()
+    print(second-first)
+    return jsonify({"status": "success", "images": ress})
+  except:
+    return jsonify({"status": "failed"}), 500
+
+@app.route('/generate_image_3', methods=['POST','OPTIONS'])
+@cross_origin()
+def generate_image_3():
+  try:
+    first = time.time()
+    data = request.json
+    if not data:
+        return jsonify({"status": "failed"}), 400
+    text = data['text']
+    ip = data['ip']
+    
+    user = db.chatUsers.find_one({"user": ip})
+    resp = []
+    try:
+      resp = generate_image_text_first_source_anm(text.lower()) 
+    except Exception as e:
+      print('error',e)
     print(resp)
       
     ress = []
