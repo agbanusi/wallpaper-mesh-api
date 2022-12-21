@@ -47,7 +47,6 @@ def get_response(message, messages, funcs):
 @cross_origin()
 def generate_image():
   try:
-    first = time.time()
     data = request.json
     if not data:
       return jsonify({"status": "failed"}), 400
@@ -71,8 +70,6 @@ def generate_image():
     else:
       db.chatUsers.insert_one({"user": ip, "images": ress})
     
-    second = time.time()
-    print(second-first)
     return jsonify({"status": "success", "images": ress})
   except:
     return jsonify({"status": "failed"}), 500
