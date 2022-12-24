@@ -71,7 +71,8 @@ def generate_image():
       db.chatUsers.insert_one({"user": ip, "images": ress})
     
     return jsonify({"status": "success", "images": ress})
-  except:
+  except Exception as e:
+    print(e)
     return jsonify({"status": "failed"}), 500
 
 
@@ -106,7 +107,8 @@ def generate_image_2():
     second = time.time()
     print(second-first)
     return jsonify({"status": "success", "images": ress})
-  except:
+  except Exception as e:
+    print(e)
     return jsonify({"status": "failed"}), 500
 
 @app.route('/generate_image_3', methods=['POST','OPTIONS'])
@@ -140,7 +142,8 @@ def generate_image_3():
     second = time.time()
     print(second-first)
     return jsonify({"status": "success", "images": ress})
-  except:
+  except Exception as e:
+    print(e)
     return jsonify({"status": "failed"}), 500
 
 @app.route('/generate_image_4', methods=['POST','OPTIONS'])
